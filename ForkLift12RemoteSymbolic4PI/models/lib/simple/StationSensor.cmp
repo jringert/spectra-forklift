@@ -1,0 +1,7 @@
+
+component StationSensor[lejos.nxt.SensorPort sp] {
+	 
+    port
+    	out Boolean sense;
+    	       
+}

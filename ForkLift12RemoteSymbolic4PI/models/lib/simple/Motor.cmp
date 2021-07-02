@@ -1,0 +1,8 @@
+import lib.simple.MotorCmd;
+
+component Motor[lejos.nxt.remote.RemoteMotor m] {
+	 
+    port
+    	in MotorCmd cmd;
+       
+}

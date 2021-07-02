@@ -1,0 +1,6 @@
+import lib.simple.Distance;
+
+component DistanceSensor[lejos.nxt.SensorPort sp, Integer cm] {
+    port
+    	out Distance sense;
+}

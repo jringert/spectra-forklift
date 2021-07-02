@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project basedir="." default="run" name="Symboli4Pi">
+    <property environment="env"/>
+    <property name="debuglevel" value="source,lines,vars"/>
+    <property name="target" value="1.7"/>
+    <property name="source" value="1.7"/>
+    
+    	<!-- check whether env.NXJ_HOME is correct -->
+	<available file="${env.NXJ_HOME}/lib/pc" property="lejos.pc.exists" />
+	<available file="${env.NXJ_HOME}/lib/nxt" property="lejos.nxt.exists" />
+	<fail unless="lejos.pc.exists" message="env.NXJ_HOME variable incorrect, ${env.NXJ_HOME}/lib/pc does not exist" />
+	<fail unless="lejos.nxt.exists" message="env.NXJ_HOME variable incorrect, ${env.NXJ_HOME}/lib/nxt does not exist" />
+
+	<!-- define the search paths -->
+	<path id="lejos.pc">
+		<fileset dir="${env.NXJ_HOME}/lib/pc">
+			<include name="**/*.jar" />
+		</fileset>
+	</path>
+	<path id="lejos.nxt">
+		<fileset dir="${env.NXJ_HOME}/lib/nxt">
+			<include name="**/*.jar" />
+		</fileset>
+	</path>
+
+    <path id="Symboli4Pi.classpath">
+        <pathelement location="bin"/>
+        <pathelement location="lib/syntech.jar"/>
+        <pathelement location="lib/cmplib.jar"/>
+    	<pathelement location="lib/symbolic.jar"/>
+    </path>
+    <target name="init">
+        <mkdir dir="bin"/>
+        <copy includeemptydirs="false" todir="bin">
+            <fileset dir="src">
+                <exclude name="**/*.launch"/>
+                <exclude name="**/*.java"/>
+            </fileset>
+        </copy>
+    </target>
+    <target name="clean">
+        <delete dir="bin"/>
+    </target>
+    <target depends="clean" name="cleanall"/>
+    <target depends="init" name="compile">
+        <echo message="${ant.project.name}: ${ant.file}"/>
+        <javac debug="true" debuglevel="${debuglevel}" destdir="bin" source="${source}" target="${target}">
+            <src path="src"/>
+        	  <src path="src-gen"/>
+            <classpath refid="Symboli4Pi.classpath"/>
+            <classpath refid="lejos.pc" />
+        </javac>
+    </target>
+    <target name="run" description="run the debug tool" depends="compile">
+		<java classname="syntech.forklift.RunForkLift" fork="true" failonerror="true">
+			<sysproperty key="env.NXJ_HOME" file="${env.env.NXJ_HOME}"/>
+			<classpath refid="lejos.pc" />
+       <classpath refid="Symboli4Pi.classpath" />
+		</java>
+	</target>
+
+</project>

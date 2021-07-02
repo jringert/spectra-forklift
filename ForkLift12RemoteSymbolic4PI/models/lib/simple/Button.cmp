@@ -1,0 +1,6 @@
+component Button[lejos.nxt.SensorPort sp] {
+	 
+    port
+    	out Boolean pressed;
+       
+}

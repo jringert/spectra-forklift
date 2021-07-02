@@ -1,0 +1,152 @@
+///////////////////////////
+// V2.Continuous
+///////////////////////////
+import "../patterns/DwyerPatterns.spectra"
+
+module ControllerSpec
+
+// inputs
+env Distance cargo;
+env Distance sense;
+env boolean station;
+env boolean emgOff;
+env boolean liftAck;
+
+// outputs
+sys MotorCmd mLeft;
+sys MotorCmd mRight;
+sys LiftCmd lift;
+
+// type definitions
+type Distance = { CLEAR, BLOCKED };
+type MotorCmd = { FWD, STOP, BWD };
+type LiftCmd = { LIFT, DROP, NIL };
+
+define
+  backing := mLeft = BWD & mRight = BWD;
+  stopping := mLeft = STOP & mRight = STOP;
+  turning := mLeft = BWD & mRight = FWD | mLeft = FWD & mRight = BWD;
+  forwarding := mLeft = FWD & mRight = FWD;
+  
+  dropping := lift = DROP;
+  lifting := lift = LIFT;
+  
+  lowObstacle := (cargo = BLOCKED & !station);
+
+  // Environment Specification
+  /////////////////////////////////////
+
+  // A1 find cargo if going forward to next station
+assumption
+  pRespondsToS(forwarding & !loaded, (station & cargo=BLOCKED) | backing | stopping);
+assumption
+  pRespondsToS(forwarding & loaded, (station & cargo=CLEAR) | backing | stopping);
+
+  // A2 leave station eventually
+assumption
+  pRespondsToS(forwarding, !station | stopping);
+assumption
+  pRespondsToS(backing, !station | stopping);
+    
+  // unblock path if backing or turning
+assumption
+  pRespondsToS(backing | turning, (sense=CLEAR & cargo=CLEAR) | forwarding | stopping);
+
+  // station does not change when stopping
+assumption
+  G (stopping -> station = next(station));
+  
+weight 0
+  liftAck;
+  
+assumption 
+  !liftAck;
+    
+assumption
+  pRespondsToS(waitingForLifting, liftAck);
+    
+// no strange lifting acks
+//assumption
+  //G (next(liftAck) -> (waitingForLifting & !liftAck));
+
+
+  // System Specification
+  ///////////////////////////////////////
+
+  // initial state
+guarantee
+  stopping & lift = NIL;
+
+/**
+ * monitor waitingForLifting is true when we have lifted or dropped and are
+ * not received a liftAck
+ */
+monitor boolean waitingForLifting {
+  !waitingForLifting;
+// monitorWaitingForLifting:
+  G ((lift=LIFT | lift=DROP) -> next(waitingForLifting));
+// switchWaitingUnlessNewCommand:
+  G (liftAck -> (next(!waitingForLifting) | lift=LIFT | lift=DROP));
+// sameWaitingStatus:
+  G (!(lift=LIFT | lift=DROP | liftAck) -> waitingForLifting = next(waitingForLifting));
+}  
+  
+guarantee stopWhenWaiting:
+  G (waitingForLifting -> stopping);
+
+guarantee dontLiftWhenWait:
+  G (waitingForLifting -> lift=NIL);
+
+/**
+ * monitor loaded is true iff we have cargo loaded and acknowledged
+ */
+monitor boolean loaded {
+  !loaded;  
+  G (liftAck & !loaded -> next(loaded));
+  G (liftAck & loaded -> next(!loaded));
+  G (!liftAck ->  loaded = next(loaded));
+}
+ 
+ 
+  // G3 restricting lifting action based on var loaded
+guarantee
+  G (loaded -> !lifting);
+
+guarantee
+  G (!loaded -> !dropping);
+  ////////////////////////////////////////
+
+// G1 dont run into obstacles
+guarantee
+  G ((sense = BLOCKED | lowObstacle) -> ! forwarding);
+  // don't mess with low obstacles
+guarantee
+  G (cargo=BLOCKED -> !turning);
+
+// don't lift if no cargo found
+guarantee
+  G (cargo = CLEAR -> !lifting);
+    
+// don't move while lifting or dropping
+guarantee
+  G (lift != NIL -> stopping);
+
+guarantee // do nothing if stopped
+  G (emgOff -> (stopping & lift=NIL)); 
+
+// only turn, go, stop or back
+guarantee
+  G (forwarding | turning | stopping | backing);
+
+// liveness of system
+///////////////////////////////////////
+
+//G4
+guarantee
+  GF ((lift=DROP)|emgOff|lowObstacle);
+    
+gar leaveStationForDelivery:
+  pBecomesTrue_betweenQandR(!station, lifting, dropping);
+    
+gar dontLiftAfterLeavingStationUntilAtStation:
+  pHolds_afterQuntilR(lift=NIL, !station, station);

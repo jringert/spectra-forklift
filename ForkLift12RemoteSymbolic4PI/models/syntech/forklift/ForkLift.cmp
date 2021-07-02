@@ -1,0 +1,27 @@
+<<Deploy>>component ForkLift {
+
+  // exception to put it first because it sends data to controller
+  component LiftMotor(lejos.nxt.Motor.A) mLift;
+  // sensors
+  component StationSensor(lejos.nxt.SensorPort.S1) stationSense;
+  component DistanceSensor(lejos.nxt.SensorPort.S2, 20) distSense;
+  component Button(lejos.nxt.SensorPort.S3) emgOffButton;
+  component DistanceSensor(lejos.nxt.SensorPort.S4, 9) cargoSense;
+  // controller
+  component Controller controller;
+  // actuators
+  component Motor(lejos.nxt.Motor.B) mLeft;
+  component Motor(lejos.nxt.Motor.C) mRight;
+  
+  // input from sensors to controller
+  connect stationSense.sense -> controller.station;  
+  connect distSense.sense -> controller.sense;
+  connect emgOffButton.pressed -> controller.emgOff;
+  connect cargoSense.sense -> controller.cargo;
+  connect mLift.ack -> controller.liftAck;
+  
+  // output from controller to actuators
+  connect controller.lift -> mLift.cmd; 
+  connect controller.mLeft -> mLeft.cmd;
+  connect controller.mRight -> mRight.cmd;  
+}

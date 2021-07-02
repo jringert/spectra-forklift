@@ -1,0 +1,7 @@
+import lib.simple.LiftCmd;
+
+component LiftMotor[lejos.nxt.remote.RemoteMotor m] {
+	port
+    in LiftCmd cmd,
+    out Boolean ack;
+}

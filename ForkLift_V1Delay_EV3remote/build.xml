@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project basedir="." default="build" name="ForkLift_V1Delay_EV3remote">
+    <property environment="env"/>
+    <property name="debuglevel" value="source,lines,vars"/>
+    <property name="target" value="11"/>
+    <property name="source" value="11"/>
+    <path id="LeJOS EV3 EV3 Runtime.libraryclasspath">
+        <pathelement location="lib/lejos/ev3/3rdparty/opencv-2411.jar"/>
+        <pathelement location="lib/lejos/ev3/dbusjava.jar"/>
+        <pathelement location="lib/lejos/ev3/ev3classes.jar"/>
+        <pathelement location="lib/lejos/pc/3rdparty/commons-cli.jar"/>
+        <pathelement location="lib/lejos/pc/3rdparty/jcommon.jar"/>
+        <pathelement location="lib/lejos/pc/3rdparty/jfreechart.jar"/>
+        <pathelement location="lib/lejos/pc/3rdparty/jsch-0.1.50.jar"/>
+        <pathelement location="lib/lejos/pc/ev3tools.jar"/>
+    </path>
+    <path id="ForkLift_V1Delay_EV3remote.classpath">
+        <path refid="LeJOS EV3 EV3 Runtime.libraryclasspath"/>
+        <pathelement location="bin"/>
+    	<pathelement location="lib/syntech/executor.jar"/>
+    </path>
+    <path id="run.ForkLift.classpath">
+        <path refid="ForkLift_V1Delay_EV3remote.classpath"/>
+    </path>
+    <target name="init">
+        <mkdir dir="bin"/>
+        <copy includeemptydirs="false" todir="bin">
+            <fileset dir="src">
+                <exclude name="**/*.java"/>
+            </fileset>
+        </copy>
+    </target>
+    <target name="clean">
+        <delete dir="bin"/>
+    </target>
+    <target depends="clean" name="cleanall"/>
+    <target depends="build-subprojects,build-project" name="build"/>
+    <target name="build-subprojects"/>
+    <target depends="init" name="build-project">
+        <echo message="${ant.project.name}: ${ant.file}"/>
+        <javac debug="true" debuglevel="${debuglevel}" destdir="bin" includeantruntime="false" source="${source}" target="${target}">
+            <src path="src"/>
+            <classpath refid="ForkLift_V1Delay_EV3remote.classpath"/>
+        </javac>
+    </target>
+    <target description="Build all projects which reference this project. Useful to propagate changes." name="build-refprojects"/>
+    <target name="ForkLift">
+        <java classname="tau.syntech.specs.forklift.ForkLift" failonerror="true" fork="yes">
+            <classpath refid="run.ForkLift.classpath"/>
+        </java>
+    </target>
+</project>

@@ -1,0 +1,16 @@
+import lib.simple.Distance;
+import lib.simple.MotorCmd;
+import lib.simple.LiftCmd;
+
+<<Symbolic>> component Controller {
+  port
+	  in Distance sense,
+	  in Distance cargo,
+	  in Boolean station,
+	  in Boolean emgOff,
+	  in Boolean liftAck,
+	  
+	  out MotorCmd mLeft,
+	  out MotorCmd mRight,
+	  out LiftCmd lift;  
+}
