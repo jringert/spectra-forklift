@@ -48,9 +48,12 @@ public class ForkLift {
 		while (true) {
 			inputs.clear();
 
+			String cargoVal = (cargo.fetchSample()[0] * 100 < 10)?"BLOCKED":"CLEAR";
+			String senseVal = (sense.fetchSample()[0] * 100 < 30)?"BLOCKED":"CLEAR";
+			
 			// collect inputs for controller
-			inputs.put("cargo", Boolean.toString(cargo.fetchSample()[0] * 100 < 10));
-			inputs.put("sense", Boolean.toString(sense.fetchSample()[0] * 100 < 30));
+			inputs.put("cargo", cargoVal);
+			inputs.put("sense", senseVal);
 			inputs.put("emgOff", Boolean.toString(emgOff.fetchSample()[0] > .5));
 			inputs.put("station", Boolean.toString(station.fetchSample()[0] > .5));
 
